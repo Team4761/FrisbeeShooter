@@ -1,14 +1,16 @@
+package org.robockets.robot;
 
-package org.robockets.frisbeeshooter.robot;
-
-import org.robockets.frisbeeshooter.robot.subsystems.DriveTrain;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.robockets.robot.commands.DriveGo;
+import org.robockets.robot.subsystems.Drivetrain;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.robockets.robot.subsystems.Shooter;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -20,8 +22,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot {
 
 	public static OI oi;
-	public static DriveTrain driveTrain;
+	public static Drivetrain drivetrain;
+	public static Shooter shooter;
+
     Command autonomousCommand;
+    Command driveGo;
     SendableChooser chooser;
 
     /**
@@ -29,10 +34,14 @@ public class Robot extends IterativeRobot {
      * used for any initialization code.
      */
     public void robotInit() {
+    	NetworkTable.flush();
+
+		drivetrain = new Drivetrain();
+	    shooter = new Shooter();
+		driveGo = new DriveGo();
 		oi = new OI();
-		driveTrain = new DriveTrain();
-        chooser = new SendableChooser();
-        SmartDashboard.putData("Auto mode", chooser);
+
+		SmartDashboard.putNumber("Driving Speed", Drivetrain.DEFAULT_SPEED);
     }
 	
 	/**
@@ -41,7 +50,7 @@ public class Robot extends IterativeRobot {
 	 * the robot is disabled.
      */
     public void disabledInit(){
-
+    	
     }
 	
 	public void disabledPeriodic() {
@@ -58,10 +67,7 @@ public class Robot extends IterativeRobot {
 	 * or additional comparisons to the switch structure below with additional strings & commands.
 	 */
     public void autonomousInit() {
-        autonomousCommand = (Command) chooser.getSelected();
-    	
-    	// schedule the autonomous command (example)
-        if (autonomousCommand != null) autonomousCommand.start();
+       
     }
 
     /**
@@ -72,11 +78,8 @@ public class Robot extends IterativeRobot {
     }
 
     public void teleopInit() {
-		// This makes sure that the autonomous stops running when
-        // teleop starts running. If you want the autonomous to 
-        // continue until interrupted by another command, remove
-        // this line or comment it out.
-        if (autonomousCommand != null) autonomousCommand.cancel();
+		NetworkTable.flush();
+    	driveGo.start();
     }
 
     /**
